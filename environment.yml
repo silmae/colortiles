@@ -1,0 +1,7 @@
+name: colortiles
+channels:
+    - default
+dependencies:
+    - xarray
+    - rasterio
+    - jupyter
