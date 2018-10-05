@@ -4,13 +4,23 @@ Utility functions.
 
 import numpy as np
 
-def sub_dark(arr, dark, method='direct'):
+
+def band2wl(x):
+    """Swap band to wavelength"""
+    return x.swap_dims({'band':'wavelength'})
+
+
+def sub_dark(arr, dark, method='zeroclip'):
     """Subtract dark from arr"""
     methods = {
-            'direct': subclip,
-            'xmean': lambda x,y: subclip(x.groupby('x'), y.mean(dim='x'))
+            'zeroclip': _subclip,
+            'float': _floatsub
             }
     return methods[method](arr, dark)
 
-def subclip(x,y):
+
+def _subclip(x, y):
     return (x > y) * (x - y)
+
+def _floatsub(x, y):
+    return np.float64(x) - np.float64(y)
