@@ -1,4 +1,8 @@
+# Ignore datafiles
 data/
+
+# VS Code files
+.vscode/
 
 # Swap
 [._]*.s[a-v][a-z]
