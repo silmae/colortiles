@@ -23,9 +23,9 @@ def main(argv):
     print(80 * '=')
 
     dark = xr.open_rasterio(darkfile)
-    print('Dark read')
+    print('Dark read, reading dataset')
     ds = read_ENVI_ds(inputs)
-    print(ds)
+    ds.load()
     print('Data read, subtracting dark')
     ds = ds.apply(sub_dark, args=(dark,))
     print(f'Finished, saving to {outfile}')
