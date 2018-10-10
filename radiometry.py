@@ -8,7 +8,10 @@ def sub_dark(arr, dark, method='zeroclip'):
 		'zeroclip': _subclip,
 		'asfloat': _floatsub,
 		}
-    return methods[method](arr, dark)
+    def sub(x):
+      return methods[method](x, dark)
+    
+    return xr.apply_ufunc(sub, arr)
 
 
 def _subclip(x, y):
