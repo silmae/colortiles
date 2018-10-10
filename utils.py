@@ -12,7 +12,7 @@ def band2wl(x):
     return x.swap_dims({'band':'wavelength'})
 
 
-def read_ENVI_ds(files):
+def read_ENVI_data(files):
     data = dict((simple_name(f), xr.open_rasterio(f)) for f in files)
     
     for s, da in data.items():
@@ -20,7 +20,11 @@ def read_ENVI_ds(files):
         da.coords['time'] = parse_time('_'.join(sparts[3:5]))
         da.coords['material'] = ' '.join(sparts[5:])
     
-    return xr.concat(data.values(), dim='time')
+    ds = xr.Dataset(
+        data_vars={'dn': xr.concat(data.values(), dim='time')}
+        )
+    ds = ds.reset_coords()
+    return ds
 
 
 def simple_name(path):
