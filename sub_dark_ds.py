@@ -2,7 +2,7 @@ import sys
 import xarray as xr
 from glob import glob
 from radiometry import sub_dark
-from utils import read_ENVI_ds
+from utils import read_ENVI_data
 
 from warnings import filterwarnings
 filterwarnings('ignore', 'Dataset has no geotransform set')
@@ -21,13 +21,20 @@ def main(argv):
     for i in inputs:
         print(i)
     print(80 * '=')
-
+    ok =input('Is this right? [y/n]')
+    if ok != 'y':
+        print('Aborting...')
+        exit()
     dark = xr.open_rasterio(darkfile)
     print('Dark read, reading dataset')
-    ds = read_ENVI_ds(inputs)
+    ds = read_ENVI_data(inputs)
     ds.load()
     print('Data read, subtracting dark')
-    ds = ds.apply(sub_dark, args=(dark,))
+    ds = ds.set_coords('wavelength')
+    ds['dark_corrected_dn'] = sub_dark(ds['dn'], dark)
+    ds = ds.drop('dn')
+    ds = ds.reset_coords()
+
     print(f'Finished, saving to {outfile}')
     ds.to_netcdf(outfile)
     
