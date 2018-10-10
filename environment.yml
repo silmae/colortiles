@@ -4,4 +4,8 @@ channels:
 dependencies:
     - xarray
     - rasterio
+    - scipy
     - jupyter
+    - matplotlib
+    - dask
+    - netcdf4
