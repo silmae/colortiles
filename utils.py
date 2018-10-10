@@ -5,16 +5,17 @@ import xarray as xr
 from glob import glob
 import os.path as osp
 
+
 def band2wl(x):
     """Swap band to wavelength"""
     return x.swap_dims({'band':'wavelength'})
 
 
-def read_ENVI_ds(pattern):
-    files = sorted(glob(pattern))
+def read_ENVI_ds(files):
     return xr.Dataset(
         data_vars=dict((simple_name(f), xr.open_rasterio(f)) for f in files)
     )
+
 
 def simple_name(path):
     """Extract more relevant part of the path"""
