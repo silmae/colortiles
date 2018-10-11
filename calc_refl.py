@@ -2,13 +2,13 @@ import xarray as xr
 import sys
 
 def main(argv):
-    input = argv[0]
+    inputfile = argv[0]
     output = argv[1]
-    print(f'Calculating reflectances from dataset {input}')
+    print(f'Calculating reflectances from dataset {inputfile}')
     print(f'and saving result to {output}.')
     print(80*'=')
     print('Reading dataset')
-    ds = xr.open_dataset(input)
+    ds = xr.open_dataset(inputfile)
     ds.load()
 
     refs = ds.where(ds.material == 'White', drop=True)
