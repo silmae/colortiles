@@ -2,8 +2,6 @@
 Spectrophotometric model for calibration using color tiles
 """
 
-import numpy as np
-
 
 def deltaR(R, c1, c2, c3, c4, c5):
     """Difference from the assigned reflectance
@@ -13,8 +11,8 @@ def deltaR(R, c1, c2, c3, c4, c5):
     of Materials´´,
     vol.46, p.394
     """
-    dR = spectral_derivative(R)
-    ddR = spectral_derivative(dR)
+    dR = spectral_derivative(R, n=1)
+    ddR = spectral_derivative(R, n=2)
 
     return _deltaR(R, dR, ddR, c1, c2, c3, c4, c5)
 
@@ -31,4 +29,5 @@ def _deltaR(R, dR, ddR, c1, c2, c3, c4, c5):
 
 
 def spectral_derivative(x, n=1):
-    pass
+    """Calculate the first or second spectral derivatives"""
+    return x.differentiate('wavelength', n)
