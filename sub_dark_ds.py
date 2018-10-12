@@ -21,7 +21,7 @@ def main(argv):
     for i in inputs:
         print(i)
     print(80 * '=')
-    ok =input('Is this right? [y/n]')
+    ok = input('Is this right? [y/n]')
     if ok != 'y':
         print('Aborting...')
         exit()
@@ -37,7 +37,7 @@ def main(argv):
 
     print(f'Finished, saving to {outfile}')
     ds.to_netcdf(outfile)
-    
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
