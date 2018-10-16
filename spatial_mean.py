@@ -1,4 +1,5 @@
 import xarray as xr
+import numpy as np
 import utils as u
 import sys
 
@@ -23,10 +24,11 @@ def main(argv):
     ds = xr.open_dataset(inputfile)
     center = u.crop_center(ds[variable], n)
     print('Storing crop mask')
-    ds['cropped_area'] = xr.zeros_like(
-        ds[variable].isel(band=0, time=0).drop(['band', 'time'])
+    nonspatialcoords = [c for c in ds[variable].coords if c not in ['x', 'y']]
+    ds['cropped_area'] = xr.ones_like(
+        center.isel({c: 0 for c in nonspatialcoords}).drop(nonspatialcoords),
+        dtype=np.bool8
         )
-    ds['cropped_area'].loc[center.x, center.y] = 1
     print(f'Calculating mean and std for variable {variable}')
     ds['mean_' + variable] = center.mean(dim=['x', 'y'])
     ds['std_' + variable] = center.std(dim=['x', 'y'])
