@@ -9,3 +9,5 @@ dependencies:
     - matplotlib
     - dask
     - netcdf4
+    - pandas
+    - xlrd
