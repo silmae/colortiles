@@ -6,6 +6,9 @@ import numpy as np
 import xarray as xr
 from scipy.linalg import lstsq
 
+def apply_model(R, c1, c2, c3, c4, c5):
+    return R + deltaR(c1, c2, c3, c4, c5)
+
 
 def fit_dataarray(R, R_ref):
     """Fit the model parameters to the given measurements R and R_ref.
@@ -30,13 +33,19 @@ def fit_dataarray(R, R_ref):
         }
     )
 
-    A = _deltaR_matrix(
-        ds['R'].values.ravel(),
-        ds['dR'].values.ravel(),
-        ds['ddR'].values.ravel(),
-    )
+    def fit(ds):
+        A = _deltaR_matrix(
+            ds['R'].values.ravel(),
+            ds['dR'].values.ravel(),
+            ds['ddR'].values.ravel(),
+        )
+        
+        res = xr.DataArray(
+            lstsq(A, ds['deltaR'].values.ravel())[0]
+            )
+        return res
 
-    return lstsq(A, ds['deltaR'].values.ravel())
+    return ds.groupby('wavelength').apply(fit)
 
 
 def _deltaR_matrix(R, dR, ddR):
@@ -63,7 +72,7 @@ def _deltaR_matrix(R, dR, ddR):
         dR,
         ddR,
         (100 - R) * R
-        ]
+        ],
     ).T
 
 
