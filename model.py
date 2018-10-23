@@ -126,37 +126,55 @@ def _spectral_derivative(x, n=1, dim='wavelength'):
     return res
 
 
-def spectral_derivative(x, n=1, dim='wavelength'):
+def spectral_derivative(x, n=1, edge_order=1, dim='wavelength'):
     """Calculate the first or second spectral derivatives
     
-    Uses finite difference formulas for 1st and 2nd derivatives.
-    Only accepts equally spaced coordinate points.
+    Computes first derivatives with upto second-order accurate edges and second
+    derivatives with first order accurate edges.
+
+
+    Parameters
+    ----------
+    x : DataArray or Dataset
+        Data to be differentiated.
+    n : int, optional
+        nth derivative, default 1.
+    dim : str, optional
+        Dimension to differentiate by, default 'wavelength'.
     """
 
     d = x.coords[dim].diff(dim)
-    if not np.all(d[0] == d):
+    h = d[0]
+    if not np.all(h == d):
         raise(ValueError(f'Coordinate {dim} is not equally spaced.'))
 
-    pad = [
-        x.coords[dim][0] - d[0],
-        *x.coords[dim][:],
-        x.coords[dim][-1] + d[0]
-    ]
-    
-    r = x.reindex(
-            {dim: pad}, method='nearest'
-        ).rolling(
+    r = x.rolling(
             {dim: 3}, center=True
         ).construct(
             'window'
         )
 
     if n == 1:
-        K = xr.DataArray([-1, 0, 1], dims='window')
-        res = (0.5 / d[0]) * r.dot(K)
+        Kc = xr.DataArray([-1, 0, 1], dims='window')
+
+        if edge_order == 1:
+            Kf = xr.DataArray([0, -1, 1], dims='window') / h
+            Kb = xr.DataArray([-1, 1, 0], dims='window') / h
+            c_idx = (0, -1)
+        elif edge_order == 2:
+            Kf = xr.DataArray([-3, 4, -1], dims='window') / (2 * h)
+            Kb = xr.DataArray([1, -4, 3], dims='window') / (2 * h)
+            c_idx = (1, -2)
+        res = r.dot(Kc) / (2 * h)
+        
+        fd = r.where(~r.isnull(), 0).dot(Kf)
+        bd = r.where(~r.isnull(), 0).dot(Kb)
+
+        res[{dim: 0}] = fd[{dim: c_idx[0]}]
+        res[{dim: -1}] = bd[{dim: c_idx[1]}]
     elif n == 2:
         K = xr.DataArray([1, -2, 1], dims='window')
-        res = r.dot(K) / d[0]**2
+        res = r.dot(K) / h**2
     else:
         raise(ValueError('Only n=1,2 supported'))
     
