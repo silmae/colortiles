@@ -155,7 +155,7 @@ def spectral_derivative(x, n=1, edge_order=1, dim='wavelength'):
         )
 
     if n == 1:
-        Kc = xr.DataArray([-1, 0, 1], dims='window')
+        Kc = xr.DataArray([-1, 0, 1], dims='window') / (2 * h)
 
         if edge_order == 1:
             Kf = xr.DataArray([0, -1, 1], dims='window') / h
@@ -165,17 +165,24 @@ def spectral_derivative(x, n=1, edge_order=1, dim='wavelength'):
             Kf = xr.DataArray([-3, 4, -1], dims='window') / (2 * h)
             Kb = xr.DataArray([1, -4, 3], dims='window') / (2 * h)
             c_idx = (1, -2)
-        res = r.dot(Kc) / (2 * h)
-        
-        fd = r.where(~r.isnull(), 0).dot(Kf)
-        bd = r.where(~r.isnull(), 0).dot(Kb)
-
-        res[{dim: 0}] = fd[{dim: c_idx[0]}]
-        res[{dim: -1}] = bd[{dim: c_idx[1]}]
     elif n == 2:
-        K = xr.DataArray([1, -2, 1], dims='window')
-        res = r.dot(K) / h**2
+        Kc = xr.DataArray([1, -2, 1], dims='window') / h**2
+        
+        if edge_order == 1:
+            Kf = Kc
+            Kb = Kc
+            c_idx = (1, -2)
+        elif edge_order == 2:
+            raise(NotImplementedError(
+                '2nd order accurate edges not implemented for 2nd derivative'
+                ))
     else:
         raise(ValueError('Only n=1,2 supported'))
     
+    fd = r.where(~r.isnull(), 0).dot(Kf)
+    bd = r.where(~r.isnull(), 0).dot(Kb)
+
+    res = r.dot(Kc)
+    res[{dim: 0}] = fd[{dim: c_idx[0]}]
+    res[{dim: -1}] = bd[{dim: c_idx[1]}]
     return res.dropna(dim)
