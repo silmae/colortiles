@@ -1,6 +1,7 @@
 import sys
 import xarray as xr
 from radiometry import sub_dark
+from dask.diagnostics import ProgressBar
 
 
 def main(argv):
@@ -15,17 +16,17 @@ def main(argv):
     if ok != 'y':
         print('Aborting...')
         exit()
-    
-    ds = xr.open_dataset(inputfile, chunks={'filename': 1})
-    dark = ds.sel({'filename': darkfile})
-    
-    print('Data and dark found, subtracting dark')
-    ds['dark_corrected_dn'] = sub_dark(ds['dn'], dark['dn'])
-    ds = ds.drop('dn')
-    ds.assign_attrs({'dark_reference': dark})
 
-    print(f'Finished, saving to {outfile}')
-    ds.to_netcdf(outfile)
+    print('Subtracting and saving output...')
+    with ProgressBar():
+        ds = xr.open_dataset(inputfile, chunks={'filename': 1})
+        dark = ds.sel({'filename': darkfile})
+        
+        ds['dark_corrected_dn'] = sub_dark(ds['dn'], dark['dn'])
+        ds = ds.drop('dn')
+        ds.assign_attrs({'dark_reference': dark})
+
+        ds.to_netcdf(outfile)
 
 
 if __name__ == '__main__':
