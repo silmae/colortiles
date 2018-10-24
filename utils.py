@@ -13,13 +13,17 @@ def band2wl(x):
 
 
 def read_ENVI_data(files, variable, **kwargs):
-    data = dict((simple_name(f), xr.open_rasterio(f, **kwargs)) for f in files)
 
-    for s, da in data.items():
-        da.coords['filename'] = s
+    def process_single_ENVI(file, **kwargs):
+        with xr.open_rasterio(file, **kwargs) as da:
+            da.coords['filename'] = simple_name(file)
+            da.load()
+            return da
+
+    data = [process_single_ENVI(f) for f in files]
 
     ds = xr.Dataset(
-        data_vars={variable: xr.concat(data.values(), dim='filename')}
+        data_vars={variable: xr.concat(data, dim='filename')}
         )
 
     ds = ds.reset_coords()
