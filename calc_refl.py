@@ -1,5 +1,15 @@
 import xarray as xr
 import sys
+from dask.diagnostics import ProgressBar
+
+
+ref_coords = {
+    'filename': [
+        '_I50_L0-511_3-10-2018_10.59.48_White',
+        '_I50_L0-511_3-10-2018_13.17.29_White',
+        '_I50_L0-511_3-10-2018_13.33.40_White',
+    ]
+}
 
 
 def main(argv):
@@ -7,26 +17,35 @@ def main(argv):
     output = argv[1]
     variable = argv[2]
 
-    print(f'Calculating reflectances from dataset {inputfile}')
-    print(f'and saving result to {output}.')
-    print(80*'=')
-    print('Reading dataset')
-    ds = xr.open_dataset(inputfile)
-    ds.load()
+    print(f'Calculating reflectances from dataset {inputfile} for')
+    print(f'all and saving result to {output}.')
 
-    refs = ds.where(ds.material == 'White', drop=True)
-    print(f'Calculating reflectances using references {refs.time.values}')
-    refls = []
-    for t, ref in refs.groupby('time'):
-        print(f'Reference {t}')
-        refl = ds[variable] / ref[variable]
-        refl.coords['reference'] = t
-        refls.append(refl)
+    ds = xr.open_dataset(inputfile, chunks={'filename': 1})
+    refs = ds.sel(**ref_coords)[variable]
+    refs.coords['reference'] = refs.coords['filename']
+    refs = refs.swap_dims({'filename': 'reference'})
+    print(f'Found references {refs.reference.data}')
 
-    print(f'Saving results to {output}')
-    ds['reflectance'] = xr.concat(refls, dim='reference')
-    ds = ds.drop(variable)
-    ds.to_netcdf(output)
+    ok = input('Is this right? [y/n]')
+    if ok != 'y':
+        print('Aborting...')
+        exit()
+    print('Computing reflectances...')
+
+    with ProgressBar():
+        # refls = []
+        # for t, ref in refs.groupby('filename'):
+        #     print(f'Reference {t}')
+        #     refl = ds[variable] / ref[variable]
+        #     refl.coords['reference'] = t
+        #     refls.append(refl)\
+        ds['reflectance'] = ds[variable] / refs
+        
+        # ds['reflectance'] = xr.concat(
+        #     ds[variable] / refs[variable],
+        #     dim='reference')
+        ds = ds.drop(variable)
+        ds.to_netcdf(output)
 
 
 if __name__ == '__main__':
