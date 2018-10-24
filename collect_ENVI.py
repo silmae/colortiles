@@ -1,7 +1,6 @@
 """Collect a set of ENVI files to a combined NetCDF dataset"""
 
 import sys
-import xarray as xr
 import pandas as pd
 from glob import glob
 from utils import read_ENVI_data
@@ -27,6 +26,7 @@ def main(argv):
     for i in inputs:
         print(i)
     print(80 * '=')
+
     if meta is not None:
         df = pd.read_csv(meta)
         df = df.set_index('filename')
@@ -37,9 +37,11 @@ def main(argv):
         print('Aborting...')
         exit()
 
-    ds = read_ENVI_data(inputs, variable)
+    ds = read_ENVI_data(inputs, variable, chunks={})
+
     if meta is not None:
-        ds.assign(df)
+        ds = ds.assign(df)
+
     ds = ds.reset_coords()
 
     print(f'Finished, saving to {outfile}')
