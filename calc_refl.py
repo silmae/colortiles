@@ -33,17 +33,7 @@ def main(argv):
     print('Computing reflectances...')
 
     with ProgressBar():
-        # refls = []
-        # for t, ref in refs.groupby('filename'):
-        #     print(f'Reference {t}')
-        #     refl = ds[variable] / ref[variable]
-        #     refl.coords['reference'] = t
-        #     refls.append(refl)\
         ds['reflectance'] = ds[variable] / refs
-        
-        # ds['reflectance'] = xr.concat(
-        #     ds[variable] / refs[variable],
-        #     dim='reference')
         ds = ds.drop(variable)
         ds.to_netcdf(output)
 
