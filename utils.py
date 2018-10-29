@@ -51,3 +51,20 @@ def crop_center(data, n):
         'y': slice(cy - start, cy + end)
          }
     return data.isel(**crop)
+
+
+def standard_color(s):
+    """Standardize the spelling of a given color/BCRA tile
+    
+    Equates 'Bright yellow' and variants as 'Yellow' 
+    """
+    replacements = {
+        'bright yellow': 'yellow'
+    }
+
+    res = s.lower()
+
+    if res in replacements:
+        res = replacements[res]
+    
+    return res
