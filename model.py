@@ -24,7 +24,6 @@ def spectra_to_XYZ(x, cmfs='CIE 2012 10 Degree Standard Observer', illuminant='D
         domain=x.wavelength.data.ravel()
         )
     spd = spd.copy()
-    spd.interpolate(cmfs.shape)
 
     return xr.DataArray(
         cs.spectral_to_XYZ(spd, cmfs, illuminant),
