@@ -4,7 +4,27 @@ Spectrophotometric model for calibration using color tiles
 
 import numpy as np
 import xarray as xr
+import colour as cs
 from scipy.linalg import lstsq
+
+
+def spectra_to_XYZ(x, cmfs='CIE 2012 10 Degree Standard Observer', illuminant='D65'):
+    """Calculate the CIE XYZ coordinates for a given spectra"""   
+    cmfs = cs.STANDARD_OBSERVERS_CMFS[cmfs]
+    illuminant = cs.ILLUMINANTS_RELATIVE_SPDS[illuminant]
+    
+    spd = cs.SpectralPowerDistribution(
+        data=x.reflectance.data.ravel(),
+        domain=x.wavelength.data.ravel()
+        )
+    spd = spd.copy()
+    spd.interpolate(cmfs.shape)
+
+    return xr.DataArray(
+        cs.spectral_to_XYZ(spd, cmfs, illuminant),
+        dims=('CIE XYZ',),
+        coords={'CIE XYZ': ['X', 'Y', 'Z']}
+    )
 
 
 def apply_model(R, coefs):

@@ -1,6 +1,7 @@
 name: colortiles
 channels:
     - default
+    - conda-forge
 dependencies:
     - xarray
     - rasterio
@@ -11,3 +12,4 @@ dependencies:
     - netcdf4
     - pandas
     - xlrd
+    - colour-science
