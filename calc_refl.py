@@ -1,6 +1,7 @@
 import xarray as xr
 import sys
 from dask.diagnostics import ProgressBar
+from utils import extract_references
 
 
 ref_coords = {
@@ -22,12 +23,10 @@ def main(argv):
 
     print(f'Calculating reflectances from dataset {inputfile} for')
     print(f'all and saving result to {output}.')
-
     ds = xr.open_dataset(inputfile, chunks={'filename': 1})
-    refs = ds.sel(**ref_coords)[variable]
-    refs.coords['reference'] = refs.coords['filename']
-    refs = refs.swap_dims({'filename': 'reference'})
-    print(f'Found references {refs.reference.data}')
+    ds = extract_references(inputfile, variable, ref_coords)
+    found_refs = "\n".join(ds["reference_filename"].data)
+    print(f'Found references \n{found_refs}')
 
     ok = input('Is this right? [y/n]')
     if ok != 'y':
@@ -36,8 +35,8 @@ def main(argv):
     print('Computing reflectances...')
 
     with ProgressBar():
-        ds['reflectance'] = ds[variable] / refs
-        ds = ds.drop(variable)
+        ds['reflectance'] = ds[variable] / ds[f'reference_{variable}']
+        ds = ds.drop([variable, f'reference{variable}'])
         ds.to_netcdf(output)
 
 

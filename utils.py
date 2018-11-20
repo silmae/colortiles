@@ -12,6 +12,34 @@ def band2wl(x):
     return x.swap_dims({'band': 'wavelength'})
 
 
+def extract_references(ds, variable, ref_coords):
+    """Extract reference data to a new variable in the dataset.
+    
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset containing the given variable and references.
+    variable : str
+        Variable to extract from the dataset.
+    ref_coords : dict
+        Coordinates of each reference as {'dim': [values]}
+    
+    Returns
+    -------
+    xr.Dataset
+        Dataset containing the references in a new variable
+        `reference_variable` with the given reference coordinates
+        as `reference_dim` for each dimension used.
+    """
+
+    refs = ds.sel(**ref_coords)[variable]
+    for k in ref_coords:
+        refs.coords[f'reference_{k}'] = refs.coords[k]
+        refs = refs.swap_dims({k: f'reference_{k}'}).drop(k)
+    ds[f'reference_{variable}'] = refs
+    return ds
+
+
 def read_ENVI_data(files, variable, **kwargs):
 
     def process_single_ENVI(file, **kwargs):
