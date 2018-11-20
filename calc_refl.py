@@ -2,6 +2,7 @@ import xarray as xr
 import sys
 from dask.diagnostics import ProgressBar
 from utils import extract_references
+from radiometry import compute_reflectance
 
 
 ref_coords = {
@@ -33,10 +34,9 @@ def main(argv):
         print('Aborting...')
         exit()
     print('Computing reflectances...')
-
+    
+    ds = compute_reflectance(ds, variable, f'reference_{variable}')
     with ProgressBar():
-        ds['reflectance'] = ds[variable] / ds[f'reference_{variable}']
-        ds = ds.drop([variable, f'reference{variable}'])
         ds.to_netcdf(output)
 
 
