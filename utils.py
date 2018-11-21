@@ -96,3 +96,30 @@ def standard_color(s):
         res = replacements[res]
     
     return res
+
+
+def spatial_points(ds):
+    """Gather the coordinates of each spatial point x, y in the dataset.
+    
+    Assumes that both coordinates have the same dtype.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset containing coordinates x and y.
+    
+    Returns
+    -------
+    np.ndarray
+        Array containing x and y coordinates of each point in the dataset.
+    """
+    if ds.x.dtype != ds.y.dtype:
+        raise TypeError(
+            (f'x and y coordinates do not have the same dtype:'
+             f'x: {ds.x.dtype} != y: {ds.y.dtype}'))
+
+    pts = ds.stack(
+        {'xy': ['x', 'y']}
+        ).xy.data.astype(f'{ds.x.dtype}, {ds.x.dtype}')
+    return pts.view(f'{ds.x.dtype}').reshape(pts.shape + (-1,))
+    

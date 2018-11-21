@@ -101,3 +101,46 @@ def _subclip(x, y):
 
 def _floatsub(x, y):
     return np.float64(x) - np.float64(y)
+
+
+def direction(destination, origin): 
+    """Get the unit direction vector from a point to another.
+    
+    Parameters
+    ----------
+    destination : array-like
+        1 x 3 array of coordinates of the destination point.
+    origin : array-like
+        N x 3 array of coordinates of the origin point(s).
+
+    Returns
+    -------
+    np.ndarray
+        N x 3 array of unit vectors from the origin(s) to destination.
+    """
+    res = np.asarray(destination) - np.asarray(origin)
+    return res / np.linalg.norm(res, axis=1).reshape(-1, 1)
+
+
+def cosine_for(light, points):
+    """Calculate the cosine correction given points on the surface
+    ([x, y, 0]) and the point light source at [x', y', z'].
+
+    Parameters
+    ----------
+    light : array-like
+        1 x 3 array of coordinates of the point light source.
+    points : array-like
+        N x 2 array of coordinates of the surface point(s) at z=0.
+    
+    Returns
+    -------
+    result : array-like
+        N x 1 Array of cosines for the given surface points.
+    """
+    directions = direction(
+        light, 
+        np.hstack([points, np.zeros((points.shape[0], 1))])
+        )
+    normal = np.array([0, 0, 1])
+    return np.dot(normal, directions.T).reshape(-1, 1)
