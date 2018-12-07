@@ -8,13 +8,17 @@ import colour as cs
 from scipy.linalg import lstsq
 
 
-def deltaE_from_spectra(x, y, method='CIE 2000'):
-    a = cs.XYZ_to_Lab(spectra_to_XYZ(x))
-    b = cs.XYZ_to_Lab(spectra_to_XYZ(y))
+def deltaE_from_spectra(x, y, method='CIE 2000', **kwargs):
+    a = cs.XYZ_to_Lab(spectra_to_XYZ(x, **kwargs))
+    b = cs.XYZ_to_Lab(spectra_to_XYZ(y, **kwargs))
     return cs.delta_E(a, b, method)
 
 
-def spectra_to_XYZ(x, cmfs='CIE 2012 10 Degree Standard Observer', illuminant='D65'):
+def spectra_to_XYZ(
+    x,
+    cmfs='CIE 2012 10 Degree Standard Observer',
+    illuminant='D65'
+    ):
     """Calculate the CIE XYZ coordinates for a given spectra"""   
     cmfs = cs.STANDARD_OBSERVERS_CMFS[cmfs]
     illuminant = cs.ILLUMINANTS_RELATIVE_SPDS[illuminant]
@@ -27,8 +31,8 @@ def spectra_to_XYZ(x, cmfs='CIE 2012 10 Degree Standard Observer', illuminant='D
 
     return xr.DataArray(
         cs.spectral_to_XYZ(spd, cmfs, illuminant),
-        dims=('Colour',),
-        coords={'Colour': ['X', 'Y', 'Z']}
+        dims=('colour',),
+        coords={'colour': ['X', 'Y', 'Z']}
     )
 
 
