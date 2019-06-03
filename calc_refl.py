@@ -25,7 +25,7 @@ def main(argv):
     print(f'Calculating reflectances from dataset {inputfile} for')
     print(f'all and saving result to {output}.')
     ds = xr.open_dataset(inputfile, chunks={'filename': 1})
-    ds = extract_references(inputfile, variable, ref_coords)
+    ds = extract_references(ds, variable, ref_coords)
     found_refs = "\n".join(ds["reference_filename"].data)
     print(f'Found references \n{found_refs}')
 
