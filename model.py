@@ -22,15 +22,15 @@ def spectra_to_XYZ(
     """Calculate the CIE XYZ coordinates for a given spectra"""   
     cmfs = cs.STANDARD_OBSERVERS_CMFS[cmfs]
     illuminant = cs.ILLUMINANTS_RELATIVE_SPDS[illuminant]
-    
-    spd = cs.SpectralPowerDistribution(
-        data=x.data.ravel(),
-        domain=x.wavelength.data.ravel()
+
+    spd = cs.MultiSpectralDistribution(
+        data=x.to_dataframe(),
+        quantity='R-factor',
         )
     spd = spd.copy()
 
     return xr.DataArray(
-        cs.spectral_to_XYZ(spd, cmfs, illuminant),
+        cs.multi_sds_to_XYZ(spd, cmfs, illuminant),
         dims=('colour',),
         coords={'colour': ['X', 'Y', 'Z']}
     )
