@@ -7,11 +7,16 @@ import xarray as xr
 import colour as cs
 from scipy.linalg import lstsq
 
+def deltaE_from_XYZ(x, y, method='CIE 2000'):
+    a = cs.XYZ_to_Lab(x)
+    b = cs.XYZ_to_Lab(y)
+    return cs.delta_E(a, b, method)
+
 
 def deltaE_from_spectra(x, y, method='CIE 2000', **kwargs):
-    a = cs.XYZ_to_Lab(spectra_to_XYZ(x, **kwargs))
-    b = cs.XYZ_to_Lab(spectra_to_XYZ(y, **kwargs))
-    return cs.delta_E(a, b, method)
+    a = spectra_to_XYZ(x, **kwargs)
+    b = spectra_to_XYZ(y, **kwargs)
+    return cs.deltaE_from_XYZ(a, b, method)
 
 
 def spectra_to_XYZ(
