@@ -20,22 +20,19 @@ def deltaE_from_spectra(x, y, method='CIE 2000', **kwargs):
 
 
 def spectra_to_XYZ(
-    x,
+    ds,
     cmfs='CIE 2012 10 Degree Standard Observer',
     illuminant='D65'
     ):
     """Calculate the CIE XYZ coordinates for a given spectra"""   
     cmfs = cs.STANDARD_OBSERVERS_CMFS[cmfs]
     illuminant = cs.ILLUMINANTS_RELATIVE_SPDS[illuminant]
-
-    spd = cs.MultiSpectralDistribution(
-        data=x.to_dataframe(),
-        quantity='R-factor',
-        )
-    spd = spd.copy()
-
+    
+    x = ds.drop('')
+    cs.multi_sds_to_XYZ(
+        x, cmfs, illuminant),
+    
     return xr.DataArray(
-        cs.multi_sds_to_XYZ(spd, cmfs, illuminant),
         dims=('colour',),
         coords={'colour': ['X', 'Y', 'Z']}
     )
